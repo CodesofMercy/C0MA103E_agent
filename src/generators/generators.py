@@ -272,10 +272,7 @@ class MusicGenerator(GeneratorBase):
                 logger.info(f"Suno polling [{attempt+1}]: status={status}")
 
                 if status == "SUCCESS":
-                    logger.info(f"Suno SUCCESS response: {status_data}")
-                    response = status_data["data"]["response"]
-                    # response может быть списком или {"data": [...]}
-                    songs = response if isinstance(response, list) else response.get("data", response)
+                    songs = status_data["data"]["response"]["sunoData"]
                     break
                 if status == "FAILED":
                     raise RuntimeError(f"Suno генерация провалилась: {status_data}")
@@ -284,7 +281,7 @@ class MusicGenerator(GeneratorBase):
 
             # 3. Скачать оба варианта трека
             for i, song in enumerate(songs[:2]):
-                audio_url = song.get("audio_url") or song.get("stream_audio_url")
+                audio_url = song.get("sourceAudioUrl") or song.get("audioUrl") or song.get("streamAudioUrl")
                 if not audio_url:
                     logger.warning(f"Suno: нет audio_url для варианта {i+1}")
                     continue
