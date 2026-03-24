@@ -233,6 +233,7 @@ class MusicGenerator(GeneratorBase):
                     "model": "V4",
                     "instrumental": True,
                     "make_instrumental": True,
+                    "callBackUrl": "https://httpbin.org/post",
                 },
             )
             resp.raise_for_status()
