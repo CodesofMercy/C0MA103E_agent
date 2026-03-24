@@ -236,8 +236,11 @@ class MusicGenerator(GeneratorBase):
             )
             resp.raise_for_status()
             data = resp.json()
+            logger.info(f"Suno generate response: {data}")
             # API возвращает {"code": 200, "data": [{"id": "...", ...}, ...]}
             songs = data.get("data", data) if isinstance(data, dict) else data
+            if not songs:
+                raise RuntimeError(f"Suno: пустой ответ от generate: {data}")
             song_id = songs[0]["id"]
             logger.info(f"Suno: задача создана, id={song_id}")
 
