@@ -5,44 +5,37 @@
 **Цель:** бот отвечает на `/start` и `/plan`, читает vault, присылает утренний дейли.
 
 - [x] Структура проекта
-- [x] `AgentBrain` — чтение vault + Claude API
-- [x] `C0MA103EBot` — Telegram-бот с командами
-- [x] `Scheduler` — утренний дейли в 09:00
-- [x] Заполнить `.env` (токены)
-- [x] Запустить локально — бот отвечает на `/start`
-- [x] Настроить Syncthing Mac ↔ VPS — 4 файла, статус idle
-- [x] Задеплоить на VPS (rsync → /opt/C0MA103E-agent)
-- [x] Настроить systemd-сервис (автозапуск, Restart=always)
-- [x] Часовой пояс Europe/Moscow (UTC+3) — дейли в 09:00 МСК = 11:00 ТШК
-- [x] system_prompt.md загружается из config/prompts/ — формат Telegram чистый
+- [x] `AgentBrain` — чтение vault + Claude API (AsyncAnthropic, async/await)
+- [x] `C0MA103EBot` — Telegram-бот с командами + сплитинг длинных сообщений (≤4096)
+- [x] `Scheduler` — утренний дейли в 09:00 Europe/Moscow
+- [x] Syncthing Mac ↔ VPS — vault синхронизирован
+- [x] Деплой на VPS: Docker + GitHub (`/root/c0ma103e`, контейнер `c0ma103e-agent-1`)
+- [x] Workflow: `git push` → VPS `git pull && docker compose up -d --build`
+- [x] system_prompt.md загружается из config/prompts/ — Telegram-формат без markdown
 
-## Phase 2 — Генераторы 🔄 В ПРОЦЕССЕ
+## Phase 2 — Генераторы ✅ КОД ГОТОВ / ⚠️ API требуют проверки
 
 **Цель:** агент генерирует изображения, видео и музыку через Claude Tool Use API.
 Файлы → `vault/04 - Генерация/` (Syncthing → Obsidian) + немедленно в Telegram.
 
-**Инструменты (финальный выбор):**
-- Изображения: Replicate FLUX.1-dev (финал) + FLUX.1-schnell (черновик)
-- Видео: fal.ai + Kling AI (вместо Runway — стабильный SDK, лучший price/quality)
-- Музыка: Suno официальный API — полный микс + до 12 стемов (drums, bass, synth...)
+**Инструменты:**
+- Изображения: Replicate FLUX.1-dev (финал) + FLUX.1-schnell (черновик) ✅ работает
+- Видео: fal.ai + Kling AI ⏳ не оплачен
+- Музыка: sunoapi.org (неофициальный API, официального от Suno нет)
 - Стемы любого файла (резерв): Meta Demucs через Replicate
 
 **Что сделано:**
-- [x] `generators.py` — реализованы ImageGenerator, VideoGenerator, MusicGenerator, StemSeparator
-- [x] `brain.py` — `generate_content()` с Claude Tool Use API (агент сам решает что генерировать)
-- [x] `telegram_bot.py` — `/generate` запускает фоновую задачу, `cmd_queue` отправляет файлы
-- [x] `system_prompt.md` — правила генерации промптов в стиле C0MA103E
-- [x] `settings.py/yaml` — добавлены `fal_api_key`, `suno_api_key`, `generation_vault_dir`
-- [x] `requirements.txt` — добавлен `fal-client`
+- [x] `generators.py` — ImageGenerator, VideoGenerator, MusicGenerator, StemSeparator
+- [x] `brain.py` — `generate_content()` с Claude Tool Use API
+- [x] `telegram_bot.py` — `/generate`, `cmd_queue`, сплитинг сообщений ≤4096 символов
+- [x] `src/sync/watcher.py` — watchdog на изменения vault (подключён в agent.py)
+- [x] `system_prompt.md` — правила генерации промптов C0MA103E
+- [x] `settings.py/yaml` — все ключи: replicate, fal, suno
 
-**Осталось (деплой на VPS):**
-- [x] Добавить `REPLICATE_API_KEY` в `.env` — готово
-- [x] Добавить `SUNO_API_KEY` в `.env` — готово
-- [ ] Добавить `FAL_KEY` в `.env` — ⏳ fal.ai не оплачен, видео временно недоступно
-- [ ] `pip install fal-client` на VPS
-- [ ] Создать папку `vault/04 - Генерация/` (создаётся автоматически при первой генерации)
-- [ ] Проверить `/generate обложка для ближайшего трека`
-- [ ] Watchdog на изменения vault (src/sync/watcher.py) — подключить в main.py
+**Статус API:**
+- REPLICATE_API_KEY — в .env на VPS ✅
+- SUNO_API_KEY — в .env на VPS, эндпоинты исправлены ⚠️ требует тест
+- FAL_KEY — ⏳ fal.ai баланс не пополнен, видео недоступно
 
 ## Phase 3 — Автопубликация
 

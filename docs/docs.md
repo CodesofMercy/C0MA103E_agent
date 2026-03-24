@@ -50,6 +50,30 @@ Obsidian видит изменения (через ~2-5 сек)
 | `/plan` | Задачи на сегодня |
 | `/week` | Обзор на неделю |
 | `/queue` | Файлы готовые к публикации |
-| `/generate` | Запустить генерацию контента (Phase 2) |
+| `/generate [запрос]` | Запустить генерацию контента (FLUX/Suno/Kling) |
 | Любой текст | Свободная команда агенту |
 | Фото | Добавить в очередь |
+
+## Деплой
+
+```
+# Локально: пушишь в GitHub
+git push
+
+# На VPS (/root/c0ma103e):
+git pull && docker compose up -d --build
+```
+
+Контейнер: `c0ma103e-agent-1`, рестарт автоматический (`restart: always`).
+Логи: `docker compose logs -f` или `./logs/agent.log`.
+
+## Vault и синхронизация
+
+```
+Mac: ~/Documents/Buisnesses/C0MA103E/
+        ↕  Syncthing (real-time)
+VPS: /data/vault/C0MA103E/
+```
+
+Агент читает и пишет vault на VPS. Изменения появляются в Obsidian через ~2-5 сек.
+Сгенерированные файлы → `vault/04 - Генерация/[дата]/[task_id]/`.

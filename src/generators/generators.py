@@ -196,6 +196,7 @@ class MusicGenerator(GeneratorBase):
     Пользователь получает полный микс + стемы для работы в DAW.
     """
 
+    # Официальная документация: https://docs.sunoapi.org/
     BASE_URL = "https://api.sunoapi.org/api/v1"
 
     def __init__(self, api_key: str):
@@ -221,40 +222,53 @@ class MusicGenerator(GeneratorBase):
         saved_files = []
 
         async with httpx.AsyncClient(timeout=120) as http:
-            # 1. Создать генерацию
+            # 1. Создать генерацию — POST /api/v1/generate
             logger.info(f"MusicGenerator: Suno API, style={style}, stems={stems}")
             resp = await http.post(
-                f"{self.BASE_URL}/music/generate",
+                f"{self.BASE_URL}/generate",
                 headers=headers,
                 json={
                     "prompt": description,
                     "style": style,
                     "instrumental": True,
-                    "stems": stems,
+                    "make_instrumental": True,
                 },
             )
             resp.raise_for_status()
             data = resp.json()
-            generation_id = data["generation_id"]
+            # API возвращает {"code": 200, "data": [{"id": "...", ...}, ...]}
+            songs = data.get("data", data) if isinstance(data, dict) else data
+            song_id = songs[0]["id"]
+            logger.info(f"Suno: задача создана, id={song_id}")
 
-            # 2. Ждать завершения (polling)
+            # 2. Polling — GET /api/v1/get?ids={id}
+            song = None
             for _ in range(60):
                 await asyncio.sleep(5)
                 status_resp = await http.get(
-                    f"{self.BASE_URL}/music/status/{generation_id}",
+                    f"{self.BASE_URL}/get",
                     headers=headers,
+                    params={"ids": song_id},
                 )
                 status_resp.raise_for_status()
-                status = status_resp.json()
-                if status.get("status") == "complete":
+                status_data = status_resp.json()
+                songs_status = (
+                    status_data.get("data", status_data)
+                    if isinstance(status_data, dict)
+                    else status_data
+                )
+                song = songs_status[0]
+                if song.get("status") == "complete":
                     break
-                if status.get("status") == "failed":
-                    raise RuntimeError(f"Suno генерация провалилась: {status}")
+                if song.get("status") in ("error", "failed"):
+                    raise RuntimeError(f"Suno генерация провалилась: {song}")
             else:
                 raise TimeoutError("Suno: таймаут ожидания генерации (5 мин)")
 
             # 3. Скачать полный микс
-            audio_url = status["audio_url"]
+            audio_url = song.get("audio_url") or song.get("stream_audio_url")
+            if not audio_url:
+                raise ValueError(f"Suno: нет audio_url в ответе: {song}")
             full_path = out_dir / f"{task_id}_full.mp3"
             audio_resp = await http.get(audio_url, timeout=120)
             audio_resp.raise_for_status()
@@ -262,9 +276,9 @@ class MusicGenerator(GeneratorBase):
             saved_files.append(str(full_path))
             logger.info(f"Полный микс: {full_path}")
 
-            # 4. Скачать стемы если доступны
-            if stems and status.get("stems"):
-                for stem_name, stem_url in status["stems"].items():
+            # 4. Скачать стемы если доступны (поле stems в объекте песни)
+            if stems and song.get("stems"):
+                for stem_name, stem_url in song["stems"].items():
                     stem_path = out_dir / f"{task_id}_{stem_name}.wav"
                     stem_resp = await http.get(stem_url, timeout=120)
                     stem_resp.raise_for_status()

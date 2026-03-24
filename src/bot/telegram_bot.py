@@ -50,7 +50,8 @@ class C0MA103EBot:
         from src.agent.brain import AgentBrain
         brain = AgentBrain(self.settings)
         result = await brain.get_today_tasks()
-        await update.message.reply_text(result)
+        for chunk in self._split(result):
+            await update.message.reply_text(chunk)
 
     async def cmd_week(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Показывает план на неделю."""
@@ -60,7 +61,8 @@ class C0MA103EBot:
         from src.agent.brain import AgentBrain
         brain = AgentBrain(self.settings)
         result = await brain.get_week_tasks()
-        await update.message.reply_text(result)
+        for chunk in self._split(result):
+            await update.message.reply_text(chunk)
 
     async def cmd_queue(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Показывает и отправляет файлы, готовые к публикации."""
@@ -168,7 +170,8 @@ class C0MA103EBot:
         from src.agent.brain import AgentBrain
         brain = AgentBrain(self.settings)
         result = await brain.handle_owner_command(user_text)
-        await update.message.reply_text(result)
+        for chunk in self._split(result):
+            await update.message.reply_text(chunk)
 
     async def handle_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Получает фотографии — агент добавляет их в очередь/план."""
@@ -189,13 +192,33 @@ class C0MA103EBot:
             + (f"Подпись: {caption}" if caption else "Подписи нет.")
         )
 
+    @staticmethod
+    def _split(text: str, max_len: int = 4096) -> list[str]:
+        """Режет текст на куски ≤ max_len символов, разбивая по переносам строк."""
+        if len(text) <= max_len:
+            return [text]
+        chunks, current = [], []
+        current_len = 0
+        for line in text.splitlines(keepends=True):
+            if current_len + len(line) > max_len:
+                if current:
+                    chunks.append("".join(current))
+                current, current_len = [line], len(line)
+            else:
+                current.append(line)
+                current_len += len(line)
+        if current:
+            chunks.append("".join(current))
+        return chunks
+
     async def send_notification(self, bot: Bot, text: str, file_path: str = None):
         """
         Агент вызывает этот метод чтобы написать тебе.
         Опционально прикладывает файл (видео, фото, аудио, документ).
         """
         if not file_path:
-            await bot.send_message(chat_id=self.owner_id, text=text)
+            for chunk in self._split(text):
+                await bot.send_message(chat_id=self.owner_id, text=chunk)
             return
 
         p = Path(file_path)
