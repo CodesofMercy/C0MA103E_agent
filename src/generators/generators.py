@@ -272,7 +272,10 @@ class MusicGenerator(GeneratorBase):
                 logger.info(f"Suno polling [{attempt+1}]: status={status}")
 
                 if status == "SUCCESS":
-                    songs = status_data["data"]["response"]["data"]
+                    logger.info(f"Suno SUCCESS response: {status_data}")
+                    response = status_data["data"]["response"]
+                    # response может быть списком или {"data": [...]}
+                    songs = response if isinstance(response, list) else response.get("data", response)
                     break
                 if status == "FAILED":
                     raise RuntimeError(f"Suno генерация провалилась: {status_data}")
