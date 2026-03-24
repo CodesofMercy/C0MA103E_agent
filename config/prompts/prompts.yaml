@@ -1,0 +1,187 @@
+# Шаблоны промптов — C0MA103E
+# Агент читает этот файл и подставляет нужный шаблон по полю "промпт-тип" из контент-плана.
+# Формат: YAML-блоки, разделённые ---
+
+---
+type: mask_reveal
+description: "Маска появляется из темноты — базовый образ"
+platform: [tiktok, reels]
+
+image_prompt: >
+  A figure wearing an industrial gas mask slowly materializing from pure darkness,
+  dramatic chiaroscuro lighting, deep crimson light from below, ultraviolet ceiling,
+  abandoned Soviet research institute corridor, fog at floor level, peeling paint,
+  Cyrillic text fragments on walls, photorealistic, cinematic, high contrast,
+  no face visible, no logos, no text
+  --ar 9:16 --style raw --v 6
+
+video_prompt: >
+  A masked figure materializes from pure darkness, start with 0% visibility,
+  gradually reveal silhouette lit from below by deep red light, smoke rises from floor,
+  camera slowly zooms in, motion is slow and deliberate, 4 seconds, cinematic,
+  no sudden movements, no faces, no text
+  [Runway Gen-3]
+
+caption_variants:
+  - "103E"
+  - "сигнал активен"
+  - "."
+
+hashtags: "#hardstyle #witchhouse #anonymous #darkmusic #industrial"
+
+---
+type: glitch_loop
+description: "Глитч-петля с символом C0MA103E"
+platform: [tiktok]
+
+image_prompt: >
+  Abstract glitch art symbol C0MA103E floating in dark space,
+  hexagonal occult geometry surrounding it, VHS scanlines overlay,
+  crimson and silver color palette, deep black background,
+  digital decay texture, rendered as found footage artifact,
+  no human figures, no faces
+  --ar 9:16 --style raw --v 6
+
+video_prompt: >
+  Abstract VHS glitch loop, dark background, geometric shapes fragmenting
+  and reassembling, crimson and ultraviolet color flashes,
+  text fragments appearing as digital artifacts, seamlessly loopable,
+  3 seconds, no human figures
+  [Runway Gen-3]
+
+caption_variants:
+  - "ЧАСТОТА: 150 Hz"
+  - "ПРОТОКОЛ_01"
+  - "103E // АКТИВЕН"
+
+hashtags: "#hardbass #glitch #darkwave #underground"
+
+---
+type: found_footage
+description: "Найденная плёнка — советский архив"
+platform: [tiktok, reels]
+
+image_prompt: >
+  Found footage aesthetic, abandoned Soviet-era research institute interior,
+  heavy VHS grain and tracking errors, old audio equipment, reel-to-reel recorder,
+  Cyrillic labels on machinery, emergency red lighting, dust particles,
+  no faces, no people, photorealistic scan quality
+  --ar 9:16 --style raw --v 6
+
+video_prompt: >
+  Found footage: handheld camera exploring dark corridors of abandoned building,
+  walls with peeling paint and Soviet-era equipment, heavy VHS grain and tracking errors,
+  occasional cut to static, crimson emergency lights flickering,
+  8 seconds, no faces visible
+  [Kling]
+
+caption_variants:
+  - "запись датирована: 14.09.1993"
+  - "архив / НИИ_103"
+  - "найдено. воспроизведение активно."
+
+hashtags: "#vhs #FoundFootage #industrial #darkambient"
+
+---
+type: soviet_loop
+description: "Советский брутализм + hardbass визуал"
+platform: [tiktok, reels]
+
+image_prompt: >
+  Massive Soviet brutalist power plant at night, single figure in gas mask
+  standing on rooftop, ultraviolet aurora in sky, crimson industrial lights
+  reflecting in puddles below, heavy fog, cinematic wide shot, film grain,
+  no logos, no text on buildings
+  --ar 9:16 --style raw --v 6
+
+video_prompt: >
+  Time-lapse of stars over massive Soviet brutalist building,
+  ultraviolet tint to sky, single lit window in the building,
+  occult geometric symbols projected onto facade by unknown source,
+  cinematic wide shot, 6 seconds
+  [Kling]
+
+caption_variants:
+  - "где ты был в 1993?"
+  - "СТАТУС: АКТИВЕН"
+  - "103E"
+
+hashtags: "#hardbass #brutalism #soviet #darkmusic #hardstyle"
+
+---
+type: nii_artifacts
+description: "Артефакты из НИИ — карусель документов"
+platform: [instagram]
+
+image_prompt: >
+  Old Soviet-era classified document with Cyrillic text, red SECRET stamp,
+  handwritten annotations, coffee stains, torn edges,
+  black and white photograph of audio equipment attached,
+  bureaucratic aesthetic, aged paper texture, photorealistic scan,
+  dramatic top-down lighting, no faces in photographs
+  --ar 4:5 --style raw --v 6
+
+caption_variants:
+  - "архив НИИ_103Е / фрагменты / 1989–1994"
+  - "документация. доступ ограничен."
+
+hashtags: "#witchhouse #occult #archive #mysterious"
+
+---
+type: mask_portrait
+description: "Портрет маски — базовый образ для Instagram"
+platform: [instagram]
+
+image_prompt: >
+  Extreme close-up of industrial gas mask, strobe light effect,
+  fog and red backlight, dark studio environment,
+  no face visible, no neck, no identifying features,
+  high contrast black and crimson, photorealistic
+  --ar 1:1 --style raw --v 6
+
+caption_variants:
+  - "103E"
+  - "."
+  - "маска — это честность"
+
+hashtags: ""
+
+---
+type: studio_btm
+description: "Behind the mask — руки в студии"
+platform: [tiktok, instagram]
+
+image_prompt: >
+  Close-up of gloved hands adjusting hardware synthesizer knobs,
+  dark studio environment, single crimson desk lamp,
+  VHS distortion overlay, mixing board with oscilloscope display showing waveforms,
+  industrial aesthetic, no face in frame, no identifying marks on hands
+  --ar 9:16 --style raw --v 6
+
+video_prompt: >
+  Close-up of black-gloved hands working on synthesizer in dark studio,
+  red light only, slow deliberate movements, oscilloscope screen glowing,
+  5 seconds, no face visible, cinematic
+  [Runway Gen-3]
+
+caption_variants:
+  - "сеанс открыт"
+  - "ПРОТОКОЛ_02 / запись"
+  - "103E"
+
+hashtags: "#producer #studio #hardstyle #behindthemask"
+
+---
+type: release_day
+description: "День релиза — все платформы одновременно"
+platform: [all]
+
+caption_variants:
+  - "СИГНАЛ_001 / доступен"
+  - "протокол активен. слушай."
+  - "103E // первый сеанс"
+
+hashtags: "#hardstyle #hardbass #witchhouse #newmusic #release"
+
+# Для релиза промпты не нужны — материалы готовятся заранее
+# Агент только уведомляет: "сегодня релиз, вот ссылки, вот тексты для каждой платформы"

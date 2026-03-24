@@ -1,0 +1,9 @@
+anthropic>=0.40.0
+python-telegram-bot>=20.7
+apscheduler>=3.10.4
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+watchdog>=4.0.0      # для watchdog на изменения vault
+httpx>=0.27.0        # для API-запросов к генераторам
+replicate>=0.25.0    # Replicate API (FLUX.1-dev, FLUX.1-schnell, Demucs)
+fal-client>=0.10.0   # fal.ai (Kling AI — видео)

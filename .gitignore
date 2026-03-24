@@ -1,0 +1,32 @@
+# Секреты — НИКОГДА не коммитить
+.env
+credentials/
+*.key
+*.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Данные агента (генерируемые файлы)
+data/generated/*
+data/queue/*
+!data/generated/.gitkeep
+!data/queue/.gitkeep
+
+# Логи
+logs/*.log
+!logs/.gitkeep
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/

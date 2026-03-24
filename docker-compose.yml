@@ -1,0 +1,9 @@
+services:
+  agent:
+    build: .
+    restart: always
+    env_file: .env
+    volumes:
+      - /data/vault/C0MA103E:/data/vault/C0MA103E  # Syncthing vault
+      - ./logs:/app/logs
+      - ./data:/app/data

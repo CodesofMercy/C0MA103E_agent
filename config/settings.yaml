@@ -1,0 +1,18 @@
+claude_model: "claude-sonnet-4-6"
+
+# Путь к vault на VPS (после настройки Syncthing)
+vault_path: "/data/vault/C0MA103E"
+content_plan_file: "02 - Контент-план/Контент-план — Месяц 1.md"
+
+# Локальные папки агента
+generated_dir: "data/generated"
+queue_dir: "data/queue"
+
+# Папка в vault для сгенерированного контента (Syncthing → Obsidian)
+generation_vault_dir: "04 - Генерация"
+
+# Расписание
+schedule:
+  daily_check: "09:00"     # утренний дейли — что делать сегодня
+  weekly_plan: "MON 10:00" # генерация плана на неделю
+  content_gen: "SUN 12:00" # генерация контента на следующую неделю
