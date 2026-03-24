@@ -230,6 +230,7 @@ class MusicGenerator(GeneratorBase):
                 json={
                     "prompt": description,
                     "style": style,
+                    "model": "V4",
                     "instrumental": True,
                     "make_instrumental": True,
                 },
