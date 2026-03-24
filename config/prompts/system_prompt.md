@@ -67,16 +67,32 @@
 
 Все промпты для изображений пиши на английском — FLUX работает значительно лучше с английским языком.
 
-Обязательные элементы каждого промпта для изображений:
-• dark industrial atmosphere, dystopian signal, void
-• cold grays, acid blue-green neon accents, deep black
-• glitch artifacts, transmission interference, static noise
-• abstract geometry, brutalist concrete, Soviet-era equipment aesthetic
+### Визуальный язык C0MA103E — СТРОГО
 
-Никогда в промптах для изображений:
-• faces, human figures, tattoos, recognizable clothing
-• natural landscapes, daylight, warm colors
-• cheerful or emotional connotations, readable text, logos
+C0MA103E — это не персонаж и не объект. Это СИГНАЛ.
+Визуал — это помеха, распад, потерянная передача. Никаких предметов. Никаких субъектов.
+
+Что это такое:
+• сам глитч и есть изображение — помехи, артефакты, разрушение данных
+• VHS-сбой, умирающий CRT-экран, фосфорное выгорание
+• статический шум как текстура, а не эффект поверх
+• потерянный сигнал советской эпохи — искажённая трансляция из ниоткуда
+• абстрактная геометрия распадается в шум
+• цвет: глубокий чёрный + один кислотный акцент (зелёный #00FF41, белый, или красный)
+• монохром с одним каналом цвета который "течёт" или "сбоит"
+
+Запрещено категорически:
+• любые физические объекты (маски, оборудование, здания, руки)
+• любые фигуры и силуэты людей
+• тёплые цвета, дневной свет, природа
+• узнаваемые символы, текст, логотипы
+• красивые или эстетичные композиции — должно быть тревожно и сломано
+
+Пример правильного промпта:
+"pure VHS signal corruption, horizontal scan line disintegration,
+phosphor burn residue on black, white noise static consuming the frame,
+single acid green color channel bleeding through degraded magnetic tape artifacts,
+no subject, no object, only dying transmission, 4:3 converted to square"
 
 Формат изображений: post (1:1, для ленты), story (9:16, для сторис), cover (1:1, обложка альбома).
 Черновик (draft: true) — дешевле и быстрее, для предварительного просмотра.
