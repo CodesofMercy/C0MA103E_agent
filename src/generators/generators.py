@@ -188,15 +188,16 @@ class VideoGenerator(GeneratorBase):
 
 class MusicGenerator(GeneratorBase):
     """
-    Генерация музыки через официальный Suno API.
+    Генерация музыки через sunoapi.org.
     Документация: https://docs.sunoapi.org/
 
-    Стиль C0MA103E: hardstyle, hardbass, witch house, dark industrial.
-    При stems=True — Suno возвращает до 12 независимых дорожек (drums, bass, synth, ...).
-    Пользователь получает полный микс + стемы для работы в DAW.
+    POST /api/v1/generate — создаёт задачу, возвращает taskId
+    GET  /api/v1/generate/record-info?taskId=... — polling статуса
+    Статусы: PENDING → GENERATING → SUCCESS / FAILED
+    API генерирует 2 варианта трека на каждый запрос.
+    Стемы не поддерживаются — только полный микс.
     """
 
-    # Официальная документация: https://docs.sunoapi.org/
     BASE_URL = "https://api.sunoapi.org/api/v1"
 
     def __init__(self, api_key: str):
@@ -211,8 +212,9 @@ class MusicGenerator(GeneratorBase):
         stems: bool = True,
     ) -> list[str]:
         """
-        Генерирует трек и (при stems=True) скачивает стемы.
-        Возвращает список путей: [full_mix.mp3, drums.wav, bass.wav, ...]
+        Генерирует 2 варианта трека (sunoapi.org всегда возвращает пару).
+        Возвращает список путей к .mp3 файлам.
+        stems игнорируется — sunoapi.org не поддерживает стемы.
         """
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -221,79 +223,79 @@ class MusicGenerator(GeneratorBase):
         out_dir = self._make_output_dir(vault_gen_path, task_id)
         saved_files = []
 
-        async with httpx.AsyncClient(timeout=120) as http:
+        # title обязателен в customMode=True, берём из task_id
+        title = task_id.replace("-", " ").replace("_", " ")[:80]
+
+        async with httpx.AsyncClient(timeout=300) as http:
             # 1. Создать генерацию — POST /api/v1/generate
-            logger.info(f"MusicGenerator: Suno API, style={style}, stems={stems}")
+            # customMode=True нужен чтобы передать style отдельно от prompt
+            # Обязательные поля: customMode, instrumental, callBackUrl, model,
+            #                    prompt, style, title (в customMode)
+            logger.info(f"MusicGenerator: Suno API, style={style}")
             resp = await http.post(
                 f"{self.BASE_URL}/generate",
                 headers=headers,
                 json={
-                    "prompt": description,
-                    "style": style,
+                    "customMode": True,
                     "model": "V4",
+                    "prompt": description[:3000],
+                    "style": style[:200],
+                    "title": title,
                     "instrumental": True,
-                    "make_instrumental": True,
                     "callBackUrl": "https://httpbin.org/post",
                 },
             )
             resp.raise_for_status()
             data = resp.json()
             logger.info(f"Suno generate response: {data}")
-            # API возвращает {"code": 200, "data": [{"id": "...", ...}, ...]}
-            songs = data.get("data", data) if isinstance(data, dict) else data
-            if not songs:
-                raise RuntimeError(f"Suno: пустой ответ от generate: {data}")
-            song_id = songs[0]["id"]
-            logger.info(f"Suno: задача создана, id={song_id}")
 
-            # 2. Polling — GET /api/v1/get?ids={id}
-            song = None
-            for _ in range(60):
+            if data.get("code") != 200 or not data.get("data"):
+                raise RuntimeError(f"Suno: ошибка при создании задачи: {data}")
+
+            suno_task_id = data["data"]["taskId"]
+            logger.info(f"Suno: задача создана, taskId={suno_task_id}")
+
+            # 2. Polling — GET /api/v1/generate/record-info?taskId=...
+            # Статусы: PENDING, GENERATING, SUCCESS, FAILED
+            # audio_url готов через ~2-3 мин после старта
+            songs = None
+            for attempt in range(72):  # до 6 минут (72 × 5s)
                 await asyncio.sleep(5)
                 status_resp = await http.get(
-                    f"{self.BASE_URL}/get",
+                    f"{self.BASE_URL}/generate/record-info",
                     headers=headers,
-                    params={"ids": song_id},
+                    params={"taskId": suno_task_id},
                 )
                 status_resp.raise_for_status()
                 status_data = status_resp.json()
-                songs_status = (
-                    status_data.get("data", status_data)
-                    if isinstance(status_data, dict)
-                    else status_data
-                )
-                song = songs_status[0]
-                if song.get("status") == "complete":
+                status = status_data.get("data", {}).get("status")
+                logger.info(f"Suno polling [{attempt+1}]: status={status}")
+
+                if status == "SUCCESS":
+                    songs = status_data["data"]["response"]["data"]
                     break
-                if song.get("status") in ("error", "failed"):
-                    raise RuntimeError(f"Suno генерация провалилась: {song}")
+                if status == "FAILED":
+                    raise RuntimeError(f"Suno генерация провалилась: {status_data}")
             else:
-                raise TimeoutError("Suno: таймаут ожидания генерации (5 мин)")
+                raise TimeoutError("Suno: таймаут ожидания генерации (6 мин)")
 
-            # 3. Скачать полный микс
-            audio_url = song.get("audio_url") or song.get("stream_audio_url")
-            if not audio_url:
-                raise ValueError(f"Suno: нет audio_url в ответе: {song}")
-            full_path = out_dir / f"{task_id}_full.mp3"
-            audio_resp = await http.get(audio_url, timeout=120)
-            audio_resp.raise_for_status()
-            full_path.write_bytes(audio_resp.content)
-            saved_files.append(str(full_path))
-            logger.info(f"Полный микс: {full_path}")
-
-            # 4. Скачать стемы если доступны (поле stems в объекте песни)
-            if stems and song.get("stems"):
-                for stem_name, stem_url in song["stems"].items():
-                    stem_path = out_dir / f"{task_id}_{stem_name}.wav"
-                    stem_resp = await http.get(stem_url, timeout=120)
-                    stem_resp.raise_for_status()
-                    stem_path.write_bytes(stem_resp.content)
-                    saved_files.append(str(stem_path))
-                    logger.info(f"Стем {stem_name}: {stem_path}")
+            # 3. Скачать оба варианта трека
+            for i, song in enumerate(songs[:2]):
+                audio_url = song.get("audio_url") or song.get("stream_audio_url")
+                if not audio_url:
+                    logger.warning(f"Suno: нет audio_url для варианта {i+1}")
+                    continue
+                suffix = f"_v{i + 1}"
+                song_path = out_dir / f"{task_id}{suffix}.mp3"
+                audio_resp = await http.get(audio_url, timeout=120)
+                audio_resp.raise_for_status()
+                song_path.write_bytes(audio_resp.content)
+                saved_files.append(str(song_path))
+                logger.info(f"Трек вариант {i+1}: {song_path}")
 
         prompt_summary = f"{description} | style: {style}"
         self._write_companion_note(
-            out_dir, task_id, "Трек", prompt_summary, "Suno API", saved_files
+            out_dir, task_id, "Трек", prompt_summary, "Suno V4", saved_files
         )
         return saved_files
 
